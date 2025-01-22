@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local-First Chat</title>
+  <script async src="https://ga.jspm.io/npm:es-module-shims@2.0.5/dist/es-module-shims.js"></script>
+  <script type="esms-options">{ "polyfillEnable": ["css-modules", "wasm-modules", "typescript"] }</script>
+  <script type="importmap">
+  {
+    "imports": {
+      "@automerge/automerge-repo": "https://ga.jspm.io/npm:@automerge/automerge-repo@1.2.1/dist/entrypoints/fullfat.js",
+      "@automerge/automerge-repo-network-websocket": "https://ga.jspm.io/npm:@automerge/automerge-repo-network-websocket@1.2.1/dist/index.js",
+      "@automerge/automerge-repo-storage-indexeddb": "https://ga.jspm.io/npm:@automerge/automerge-repo-storage-indexeddb@1.2.1/dist/index.js",
+      "@featherscloud/auth": "https://ga.jspm.io/npm:@featherscloud/auth@0.6.5/esm/index.js",
+      "htm/react": "https://ga.jspm.io/npm:htm@3.1.1/react/index.module.js",
+      "react": "https://ga.jspm.io/npm:react@18.3.1/dev.index.js",
+      "react-dom/client": "https://ga.jspm.io/npm:react-dom@18.3.1/dev.client.js"
+    },
+    "scopes": {
+      "https://ga.jspm.io/": {
+        "#esm/src/hashes/sha2.js": "https://ga.jspm.io/npm:@jspm/core@2.1.0/nodelibs/@empty.js",
+        "@automerge/automerge": "https://ga.jspm.io/npm:@automerge/automerge@2.2.8/dist/mjs/entrypoints/fullfat_bundler.js",
+        "@automerge/automerge-repo/slim": "https://ga.jspm.io/npm:@automerge/automerge-repo@1.2.1/dist/entrypoints/slim.js",
+        "@automerge/automerge/slim": "https://ga.jspm.io/npm:@automerge/automerge@2.2.8/dist/mjs/entrypoints/slim.js",
+        "@automerge/automerge/slim/next": "https://ga.jspm.io/npm:@automerge/automerge@2.2.8/dist/mjs/entrypoints/slim_next.js",
+        "@feathersjs/errors": "https://ga.jspm.io/npm:@feathersjs/errors@5.0.31/lib/index.js",
+        "@noble/hashes/crypto": "https://ga.jspm.io/npm:@noble/hashes@1.7.0/crypto.js",
+        "@noble/hashes/sha256": "https://ga.jspm.io/npm:@noble/hashes@1.7.0/sha256.js",
+        "@stablelib/binary": "https://ga.jspm.io/npm:@stablelib/binary@1.0.1/lib/binary.js",
+        "@stablelib/ed25519": "https://ga.jspm.io/npm:@stablelib/ed25519@1.0.3/lib/ed25519.js",
+        "@stablelib/int": "https://ga.jspm.io/npm:@stablelib/int@1.0.1/lib/int.js",
+        "@stablelib/random": "https://ga.jspm.io/npm:@stablelib/random@1.0.2/lib/random.js",
+        "@stablelib/sha512": "https://ga.jspm.io/npm:@stablelib/sha512@1.0.1/lib/sha512.js",
+        "@stablelib/wipe": "https://ga.jspm.io/npm:@stablelib/wipe@1.0.1/lib/wipe.js",
+        "base-x": "https://ga.jspm.io/npm:base-x@4.0.0/src/index.js",
+        "bs58": "https://ga.jspm.io/npm:bs58@5.0.0/index.js",
+        "bs58check": "https://ga.jspm.io/npm:bs58check@3.0.1/index.js",
+        "cbor-x": "https://ga.jspm.io/npm:cbor-x@1.6.0/index.js",
+        "crypto": "https://ga.jspm.io/npm:@jspm/core@2.1.0/nodelibs/browser/crypto.js",
+        "debug": "https://ga.jspm.io/npm:debug@4.4.0/src/browser.js",
+        "eventemitter3": "https://ga.jspm.io/npm:eventemitter3@5.0.1/index.mjs",
+        "fast-sha256": "https://ga.jspm.io/npm:fast-sha256@1.3.0/sha256.js",
+        "htm": "https://ga.jspm.io/npm:htm@3.1.1/dist/htm.module.js",
+        "idb": "https://ga.jspm.io/npm:idb@8.0.1/build/index.js",
+        "isomorphic-ws": "https://ga.jspm.io/npm:isomorphic-ws@5.0.0/browser.js",
+        "ms": "https://ga.jspm.io/npm:ms@2.1.3/index.js",
+        "multiformats/basics": "https://ga.jspm.io/npm:multiformats@9.9.0/esm/src/basics.js",
+        "process": "https://ga.jspm.io/npm:@jspm/core@2.1.0/nodelibs/browser/process.js",
+        "react-dom": "https://ga.jspm.io/npm:react-dom@18.3.1/dev.index.js",
+        "scheduler": "https://ga.jspm.io/npm:scheduler@0.23.2/dev.index.js",
+        "uint8arrays": "https://ga.jspm.io/npm:uint8arrays@3.1.1/esm/src/index.js",
+        "uuid": "https://ga.jspm.io/npm:uuid@9.0.1/dist/esm-browser/index.js",
+        "xstate": "https://ga.jspm.io/npm:xstate@5.19.2/dist/xstate.development.esm.js"
+      }
+    }
+  }
+  </script>
+</head>
+
+<body>
+  <div id="root" class="w-full"></div>
+  <script type="module" src="src/main.ts"></script>
+</body>
+
+</html>
