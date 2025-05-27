@@ -16,7 +16,7 @@ export type Message = {
   userId: string;
 };
 
-export type ChatDocument = {
+export type ChatAppData = {
   messages: Message[];
   users: User[];
 };

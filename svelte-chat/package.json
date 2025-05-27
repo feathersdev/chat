@@ -21,10 +21,8 @@
     "vite-plugin-wasm": "^3.3.0"
   },
   "dependencies": {
-    "@automerge/automerge-repo": "^1.2.1",
-    "@automerge/automerge-repo-network-websocket": "^1.2.1",
-    "@automerge/automerge-repo-storage-indexeddb": "^1.2.1",
-    "@featherscloud/auth": "^0.6.2",
+    "@feathersdev/auth": "^0.11.3",
+    "@feathersdev/automerge": "^0.11.3",
     "@feathersjs/errors": "^5.0.29",
     "vite-plugin-top-level-await": "^1.4.2"
   }
