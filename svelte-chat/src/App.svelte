@@ -1,36 +1,10 @@
 <script lang="ts">
-  import {
-    type AnyDocumentId,
-    Repo,
-    type Doc
-  } from '@automerge/automerge-repo';
-  import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
-  import { IndexedDBStorageAdapter } from '@automerge/automerge-repo-storage-indexeddb';
-
-  import {
-    LoginRequiredError,
-    createClient,
-    createVerifier
-  } from '@featherscloud/auth';
-
-  import type { ChatDocument, CloudAuthUser, Message, User } from './utils.js';
+  import type { Doc } from '@automerge/automerge-repo';
+  import type { ChatAppData, CloudAuthUser, Message, User } from './utils.js';
   import { formatDate, sha256 } from './utils.js';
   import { afterUpdate } from 'svelte';
-  import { marked } from 'marked';
-  import DOMPurify from 'dompurify';
-
-  // Initialize Feathers Cloud Auth
-  const appId = import.meta.env.VITE_CLOUD_APP_ID as string;
-  const auth = createClient({ appId });
-  const verifier = createVerifier({ appId });
-
-  // Initialize Automerge
-  const repo = new Repo({
-    network: [new BrowserWebSocketClientAdapter('wss://sync.automerge.org')],
-    storage: new IndexedDBStorageAdapter()
-  });
-  const automergeUrl = import.meta.env.VITE_AUTOMERGE_URL as AnyDocumentId;
-  const handle = repo.find<ChatDocument>(automergeUrl);
+  import { loadAppDocument, type AppDocumentHandle } from './automerge.js';
+  import { auth } from './auth.js';
 
   let ready = false;
   let cloudAuthUser: CloudAuthUser | null = null;
@@ -38,38 +12,27 @@
   let messages: Message[] = [];
   let users: User[] = [];
   let text: string = '';
+  let handle: AppDocumentHandle;
 
   const getUserById = (id: string) => users.find((user) => user.id === id);
 
   const init = async () => {
-    try {
-      // Get Feathers Cloud Auth access token
-      const accessToken = await auth.getAccessToken();
-      // Verify our token (this will redirect to the login screen if necessary)
-      const { user: verifiedUser } = await verifier.verify(accessToken);
-      const loadDocument = (doc?: Doc<ChatDocument>) => {
-        if (doc) {
-          user =
-            doc.users.find((user) => user.id === cloudAuthUser?.id) || null;
-          messages = doc.messages;
-          users = doc.users;
-        }
-        ready = true;
-      };
+    const loadDocument = (doc?: Doc<ChatAppData>) => {
+      if (doc) {
+        user = doc.users?.find((user) => user.id === cloudAuthUser?.id) || null;
+        messages = doc.messages || [];
+        users = doc.users || [];
+      }
+      ready = true;
+    };
 
-      cloudAuthUser = verifiedUser;
-      // Update application data when document changes
-      handle.on('change', ({ doc }) => loadDocument(doc));
-      // Initialise the document if it is already available
-      if (handle.isReady()) {
-        loadDocument(await handle.doc());
-      }
-    } catch (error) {
-      // Redirect to Feathers Cloud Auth login
-      if (error instanceof LoginRequiredError) {
-        window.location.href = await auth.getLoginUrl(error);
-      }
-      throw error;
+    handle = await loadAppDocument();
+    cloudAuthUser = await auth.getUser();
+    // Update application data when document changes
+    handle.on('change', ({ doc }) => loadDocument(doc));
+    // Initialise the document if it is already available
+    if (handle.isReady()) {
+      loadDocument(await handle.doc());
     }
   };
 
@@ -91,6 +54,10 @@
 
       handle.change((doc) => {
         if (cloudAuthUser !== null) {
+          if (!doc.users) {
+            doc.users = [];
+          }
+
           doc.users.push({
             id: cloudAuthUser.id,
             avatar: `https://www.gravatar.com/avatar/${emailHash}`,
@@ -106,6 +73,10 @@
 
     handle.change((doc) => {
       if (user !== null) {
+        if (!doc.messages) {
+          doc.messages = [];
+        }
+
         doc.messages.push({
           id: crypto.randomUUID(),
           text: text,
@@ -115,6 +86,11 @@
         text = '';
       }
     });
+  };
+
+  const logout = async () => {
+    await auth.logoutAndForget();
+    window.location.reload();
   };
 
   afterUpdate(() => {
@@ -176,6 +152,11 @@
                 <span class="online-count">{users.length}</span> User(s)
               </label>
             </div>
+            <div class="navbar-end">
+              <button class="btn btn-sm btn-neutral" on:click={logout}>
+                Logout
+              </button>
+            </div>
           </div>
           <div id="chat" class="h-full overflow-y-auto px-3">
             {#each messages as message (message.id)}
@@ -194,7 +175,9 @@
                     >{formatDate(message.createdAt)}</time
                   >
                 </div>
-                <div class="chat-bubble">{@html DOMPurify.sanitize(marked.parse(message.text))}</div>
+                <div class="chat-bubble">
+                  {message.text}
+                </div>
               </div>
             {/each}
             <div id="message-end" />
