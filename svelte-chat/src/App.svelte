@@ -5,6 +5,7 @@
   import { afterUpdate } from 'svelte';
   import { loadAppDocument, type AppDocumentHandle } from './automerge.js';
   import { auth } from './auth.js';
+  import loading from './assets/loading.svg';
 
   let ready = false;
   let cloudAuthUser: CloudAuthUser | null = null;
@@ -226,5 +227,7 @@
         </div>
       </div>
     {/if}
+  {:else}
+    <img class="mx-auto mt-12" src={loading} alt="Loading" />
   {/if}
 </main>
