@@ -161,7 +161,7 @@
           </div>
           <div id="chat" class="h-full overflow-y-auto px-3">
             {#each messages as message (message.id)}
-              <div class="chat chat-start py-2">
+              <div class={`chat ${message.userId === user?.id ? 'chat-end' : 'chat-start'} py-2`}>
                 <div class="chat-image avatar">
                   <div class="w-10 rounded-full">
                     <img
