@@ -14,6 +14,7 @@ export type Message = {
   text: string;
   createdAt: number;
   userId: string;
+  likes: string[];
 };
 
 export type ChatDocument = {

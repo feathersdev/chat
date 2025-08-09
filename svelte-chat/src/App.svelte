@@ -1,5 +1,7 @@
 <script lang="ts">
   import QRCode from 'qrcode';
+  import { marked } from 'marked';
+  import DOMPurify from 'dompurify';
   import {
     type AnyDocumentId,
     Repo,
@@ -17,6 +19,7 @@
   import type { ChatDocument, CloudAuthUser, Message, User } from './utils.js';
   import { formatDate, sha256 } from './utils.js';
   import { afterUpdate } from 'svelte';
+  import EmojiInput from './lib/EmojiInput.svelte';
 
   // Initialize Feathers Cloud Auth
   const appId = import.meta.env.VITE_CLOUD_APP_ID as string;
@@ -57,6 +60,18 @@
   let text: string = '';
 
   const getUserById = (id: string) => users.find((user) => user.id === id);
+
+  // Function to detect if message contains only emojis (including spaces)
+  const isEmojiOnly = (text: string): boolean => {
+    // Remove all whitespace and check if remaining characters are only emojis
+    const trimmed = text.trim();
+    if (!trimmed) return false;
+    
+    // Regex to match emoji characters (including various unicode ranges for emojis)
+    const emojiRegex = /^[\u{1f600}-\u{1f64f}\u{1f300}-\u{1f5ff}\u{1f680}-\u{1f6ff}\u{1f1e0}-\u{1f1ff}\u{2600}-\u{26ff}\u{2700}-\u{27bf}\u{1f900}-\u{1f9ff}\u{1f018}-\u{1f270}\u200d\ufe0f\u20e3\s]*$/u;
+    
+    return emojiRegex.test(trimmed);
+  };
 
   const init = async () => {
     try {
@@ -128,11 +143,35 @@
           id: crypto.randomUUID(),
           text: text,
           createdAt: Date.now(),
-          userId: user.id
+          userId: user.id,
+          likes: []
         });
         text = '';
       }
     });
+  };
+
+  // Like functionality
+  const getLikeCount = (message: Message) => {
+    return message.likes?.length || 0;
+  };
+
+  const createLike = (messageId: string) => {
+    if (user && user.id) {
+      handle.change((doc) => {
+        const msg = doc.messages.find(message => message.id === messageId);
+        if (msg) {
+          const likeArray = msg.likes || [];
+          if (likeArray.includes(user.id)) {
+            // Remove the like if the user has already liked the message
+            msg.likes = likeArray.filter(like => like !== user.id);
+          } else {
+            // Add the user to the array of users who have liked this message
+            msg.likes = likeArray.concat(user.id);
+          }
+        }
+      });
+    }
   };
 
   let hasQr = false;
@@ -248,32 +287,44 @@
                     />
                   </div>
                 </div>
-                <div class="chat-header pb-1">
-                  {getUserById(message.userId)?.username}
-                  <time class="text-xs opacity-50"
-                    >{formatDate(message.createdAt)}</time
-                  >
+                <div class="chat-header pb-1 space-x-2">
+                  <span>{getUserById(message.userId)?.username}</span>
+                  <time class="text-xs opacity-50">{formatDate(message.createdAt)}</time>
                 </div>
-                <div class="chat-bubble">{message.text}</div>
+                <div class="chat-bubble break-words" class:emoji-large={isEmojiOnly(message.text)}>
+                  {@html DOMPurify.sanitize(marked.parse(message.text, { async: false }))}
+                </div>
+                <div class="chat-footer">
+                  <button 
+                    type="button" 
+                    class="text-xs cursor-pointer bg-transparent border-none p-0 hover:opacity-75" 
+                    on:click={() => createLike(message.id)}
+                    aria-label={getLikeCount(message) > 0 ? 'Unlike message' : 'Like message'}
+                  >
+                    {getLikeCount(message) > 0
+                      ? `❤️ ${getLikeCount(message)} Like${getLikeCount(message) > 1 ? 's' : ''}`
+                      : '🤍'}
+                  </button>
+                </div>
               </div>
             {/each}
             <div id="message-end" />
           </div>
           <div class="form-control w-full py-2 px-3">
-            <form
-              class="input-group overflow-hidden"
-              id="send-message"
-              on:submit={createMessage}
-            >
-              <input
-                name="text"
-                type="text"
-                placeholder="Compose message"
-                class="input input-bordered w-full"
+            <div class="input-group overflow-hidden" id="send-message">
+              <EmojiInput
                 bind:value={text}
+                placeholder="Compose message"
+                on:submit={(e) => {
+                  text = e.detail;
+                  createMessage(new Event('submit'));
+                }}
+                on:input={(e) => {
+                  text = e.detail;
+                }}
               />
-              <button type="submit" class="btn">Send</button>
-            </form>
+              <button type="button" class="btn" on:click={() => createMessage(new Event('submit'))}>Send</button>
+            </div>
           </div>
         </div>
         <div class="drawer-side">
@@ -325,3 +376,10 @@
     </div>
   </dialog>
 </main>
+
+<style>
+  .emoji-large {
+    font-size: 2rem !important;
+    line-height: 1.2 !important;
+  }
+</style>
