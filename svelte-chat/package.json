@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000",
+    "dev:https": "vite --port 3000",
+    "dev:piradio": "CERT_PATH=\"/etc/ssl/localcerts\" vite --port 3000",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"

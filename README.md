@@ -216,7 +216,7 @@ Update the client's `.env` file to point to your Pi:
 VITE_CLOUD_APP_ID=did:key:z6Mkno3UyEMfCGLcKM1ZRp9eooyrKj4VLeathb77V7nthUUw
 VITE_AUTOMERGE_URL=wss://YOUR_PI_IP:3030
 # or
-VITE_AUTOMERGE_URL=wss://raspberrypi.local:3030
+VITE_AUTOMERGE_URL=wss://piradio.local:3030
 ```
 
 **For React Chat:**
@@ -225,7 +225,7 @@ VITE_AUTOMERGE_URL=wss://raspberrypi.local:3030
 VITE_CLOUD_APP_ID=did:key:z6Mkno3UyEMfCGLcKM1ZRp9eooyrKj4VLeathb77V7nthUUw
 VITE_AUTOMERGE_URL=wss://YOUR_PI_IP:3030
 # or
-VITE_AUTOMERGE_URL=wss://raspberrypi.local:3030
+VITE_AUTOMERGE_URL=wss://piradio.local:3030
 ```
 
 ### 5. Build Client and Start Server
@@ -239,7 +239,7 @@ CERT_PATH="/etc/ssl/localcerts" PORT=3030 sudo -E npm run dev:sync
 
 ### 6. Access the Demo
 1. **Find your Pi's IP**: `hostname -I`
-2. **Access via browser**: `https://YOUR_PI_IP:3030` or `https://raspberrypi.local:3030`
+2. **Access via browser**: `https://YOUR_PI_IP:3030` or `https://piradio.local:3030`
 3. **Accept security warning** (since it's self-signed certificate)
 4. **Share with demo participants**: They'll also need to accept the security warning
 
