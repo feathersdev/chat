@@ -9,12 +9,17 @@ export type User = {
   avatar: string;
 };
 
+export type Reaction = {
+  emoji: string;
+  users: string[];
+};
+
 export type Message = {
   id: string;
   text: string;
   createdAt: number;
   userId: string;
-  likes: string[];
+  reactions: Reaction[];
 };
 
 export type ChatDocument = {

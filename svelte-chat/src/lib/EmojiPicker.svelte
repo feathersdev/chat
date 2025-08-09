@@ -66,7 +66,8 @@
     z-index: 9999;
     background: hsl(var(--b1));
     border: 1px solid hsl(var(--bc) / 0.2);
-    border-radius: 8px;
+    border-radius: 0 0 8px 8px;
+    border-top: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     max-height: 200px;
     overflow-y: auto;

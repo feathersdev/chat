@@ -16,10 +16,12 @@
     createVerifier
   } from '@featherscloud/auth';
 
-  import type { ChatDocument, CloudAuthUser, Message, User } from './utils.js';
+  import type { ChatDocument, CloudAuthUser, Message, User, Reaction } from './utils.js';
   import { formatDate, sha256 } from './utils.js';
-  import { afterUpdate } from 'svelte';
+  import { afterUpdate, onMount } from 'svelte';
   import EmojiInput from './lib/EmojiInput.svelte';
+  import MessageReactions from './lib/MessageReactions.svelte';
+  import ReactionPicker from './lib/ReactionPicker.svelte';
 
   // Initialize Feathers Cloud Auth
   const appId = import.meta.env.VITE_CLOUD_APP_ID as string;
@@ -85,7 +87,19 @@
         if (doc) {
           user =
             doc.users.find((user) => user.id === cloudAuthUser?.id) || null;
-          messages = doc.messages;
+          
+          // Migrate old likes to reactions system
+          messages = doc.messages.map(msg => {
+            if (!msg.reactions && (msg as any).likes) {
+              const likesArray = (msg as any).likes as string[];
+              return {
+                ...msg,
+                reactions: likesArray.length > 0 ? [{ emoji: '❤️', users: likesArray }] : []
+              };
+            }
+            return { ...msg, reactions: msg.reactions || [] };
+          });
+          
           users = doc.users;
         }
         ready = true;
@@ -144,35 +158,110 @@
           text: text,
           createdAt: Date.now(),
           userId: user.id,
-          likes: []
+          reactions: []
         });
         text = '';
       }
     });
   };
 
-  // Like functionality
-  const getLikeCount = (message: Message) => {
-    return message.likes?.length || 0;
-  };
+  // Reaction functionality
+  let activeReactionPicker = '';
+  let reactionPickerReferenceElement: HTMLElement | null = null;
 
-  const createLike = (messageId: string) => {
+  const addReaction = (messageId: string, emoji: string) => {
     if (user && user.id) {
       handle.change((doc) => {
         const msg = doc.messages.find(message => message.id === messageId);
-        if (msg) {
-          const likeArray = msg.likes || [];
-          if (likeArray.includes(user.id)) {
-            // Remove the like if the user has already liked the message
-            msg.likes = likeArray.filter(like => like !== user.id);
+        if (msg && user) {
+          // Ensure reactions array exists
+          if (!msg.reactions) {
+            msg.reactions = [];
+          }
+          
+          const existingReaction = msg.reactions.find(r => r.emoji === emoji);
+          if (existingReaction) {
+            if (!existingReaction.users.includes(user.id)) {
+              existingReaction.users.push(user.id);
+            }
           } else {
-            // Add the user to the array of users who have liked this message
-            msg.likes = likeArray.concat(user.id);
+            msg.reactions.push({ emoji, users: [user.id] });
           }
         }
       });
     }
   };
+
+  const removeReaction = (messageId: string, emoji: string) => {
+    if (user && user.id) {
+      handle.change((doc) => {
+        const msg = doc.messages.find(message => message.id === messageId);
+        if (msg && user) {
+          // Ensure reactions array exists
+          if (!msg.reactions) {
+            msg.reactions = [];
+            return; // Nothing to remove if reactions array didn't exist
+          }
+          
+          const reactionIndex = msg.reactions.findIndex(r => r.emoji === emoji);
+          if (reactionIndex !== -1) {
+            const reaction = msg.reactions[reactionIndex];
+            reaction.users = reaction.users.filter(userId => userId !== user.id);
+            // Remove empty reactions
+            if (reaction.users.length === 0) {
+              msg.reactions.splice(reactionIndex, 1);
+            }
+          }
+        }
+      });
+    }
+  };
+
+  const toggleReactionPicker = (messageId: string, event: MouseEvent) => {
+    reactionPickerReferenceElement = event.target as HTMLElement;
+    activeReactionPicker = activeReactionPicker === messageId ? '' : messageId;
+  };
+
+  const closeReactionPicker = () => {
+    activeReactionPicker = '';
+    reactionPickerReferenceElement = null;
+  };
+
+  // Global key handler for routing input to reaction picker or chat input
+  function handleGlobalKeyDown(event: KeyboardEvent) {
+    // Only capture printable characters (letters, numbers, symbols)
+    if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      const target = event.target as HTMLElement;
+      
+      // Don't interfere if already typing in an input or textarea
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        return;
+      }
+      
+      // If reaction picker is open, focus and type in search
+      if (activeReactionPicker !== '') {
+        event.preventDefault();
+        const reactionSearchInput = document.querySelector('#reaction-search-input') as HTMLInputElement;
+        if (reactionSearchInput) {
+          reactionSearchInput.focus();
+          reactionSearchInput.value += event.key;
+          // Trigger input event to update the bound value
+          reactionSearchInput.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        }
+        return;
+      }
+      
+      // Otherwise, focus the chat message input
+      const messageInput = document.querySelector('#message-input') as HTMLInputElement;
+      if (messageInput) {
+        event.preventDefault();
+        messageInput.focus();
+        messageInput.value += event.key;
+        // Trigger input event to update the bound value
+        messageInput.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      }
+    }
+  }
 
   let hasQr = false;
 
@@ -214,6 +303,15 @@
   }
 
   init();
+
+  // Add global key handler on mount
+  onMount(() => {
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  });
 </script>
 
 <main>
@@ -295,26 +393,36 @@
                   {@html DOMPurify.sanitize(marked.parse(message.text, { async: false }))}
                 </div>
                 <div class="chat-footer">
-                  <button 
-                    type="button" 
-                    class="text-xs cursor-pointer bg-transparent border-none p-0 hover:opacity-75" 
-                    on:click={() => createLike(message.id)}
-                    aria-label={getLikeCount(message) > 0 ? 'Unlike message' : 'Like message'}
-                  >
-                    {getLikeCount(message) > 0
-                      ? `❤️ ${getLikeCount(message)} Like${getLikeCount(message) > 1 ? 's' : ''}`
-                      : '🤍'}
-                  </button>
+                  <MessageReactions
+                    reactions={message.reactions || []}
+                    currentUserId={user?.id || ''}
+                    on:addReaction={(e) => addReaction(message.id, e.detail.emoji)}
+                    on:removeReaction={(e) => removeReaction(message.id, e.detail.emoji)}
+                    on:toggleReactionPicker={(e) => toggleReactionPicker(message.id, e.detail.event)}
+                  />
                 </div>
               </div>
             {/each}
             <div id="message-end" />
           </div>
+
+          <!-- Reaction Picker -->
+          <ReactionPicker
+            visible={activeReactionPicker !== ''}
+            referenceElement={reactionPickerReferenceElement}
+            on:select={(e) => {
+              addReaction(activeReactionPicker, e.detail);
+              closeReactionPicker();
+            }}
+            on:close={closeReactionPicker}
+          />
+
           <div class="form-control w-full py-2 px-3">
             <div class="input-group overflow-hidden" id="send-message">
               <EmojiInput
                 bind:value={text}
                 placeholder="Compose message"
+                id="message-input"
                 on:submit={(e) => {
                   text = e.detail;
                   createMessage(new Event('submit'));

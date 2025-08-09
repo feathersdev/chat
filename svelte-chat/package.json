@@ -26,6 +26,7 @@
     "@automerge/automerge-repo-storage-indexeddb": "^1.2.1",
     "@featherscloud/auth": "^0.6.2",
     "@feathersjs/errors": "^5.0.29",
+    "@floating-ui/dom": "^1.7.3",
     "dompurify": "^3.2.3",
     "marked": "^15.0.6",
     "qrcode": "^1.5.4",

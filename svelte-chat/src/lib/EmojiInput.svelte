@@ -6,6 +6,7 @@
   export let value: string = '';
   export let placeholder: string = '';
   export let disabled: boolean = false;
+  export let id: string = '';
 
   const dispatch = createEventDispatcher<{
     input: string;
@@ -219,6 +220,7 @@
     bind:value={value}
     {placeholder}
     {disabled}
+    {id}
     class="emoji-input"
     on:input={handleInput}
     on:keydown={handleKeyDown}
