@@ -2,7 +2,7 @@
   import { createEventDispatcher, onMount, afterUpdate } from 'svelte';
   import { computePosition, flip, shift, offset, autoUpdate } from '@floating-ui/dom';
   import EmojiPicker from './EmojiPicker.svelte';
-  import { searchEmojis, type EmojiData } from './emoji-data';
+  import { searchEmojis, getEmojiByName, type EmojiData } from './emoji-data';
 
   export let visible: boolean = false;
   export let referenceElement: HTMLElement | null = null;
@@ -20,18 +20,17 @@
   let cleanupAutoUpdate: (() => void) | null = null;
   let floatingPosition = { x: 0, y: 0 };
 
-  // Show popular reactions by default (9 for a perfect 3x3 grid)
-  const popularReactions = ['❤️', '👍', '👎', '😂', '😢', '😮', '🔥', '👏', '🎉'];
+  // Show popular reactions by default (9 for a perfect 3x3 grid) - using emoji names
+  const popularReactionNames = ['heart', 'thumbs_up', 'thumbs_down', 'laugh', 'cry', 'thinking', 'fire', 'clap', 'party'];
   
   $: {
     if (searchQuery.trim()) {
       filteredEmojis = searchEmojis(searchQuery);
     } else {
       // Show popular reactions first (9 emojis for perfect 3x3 grid)
-      const popularEmojiData = popularReactions.map(char => {
-        const found = searchEmojis('').find(e => e.char === char);
-        return found || { char, name: char, keywords: [] };
-      });
+      const popularEmojiData = popularReactionNames.map(name => {
+        return getEmojiByName(name);
+      }).filter(emoji => emoji !== undefined) as EmojiData[]; // Filter out any not found
       filteredEmojis = popularEmojiData;
     }
     selectedEmojiIndex = 0;
@@ -167,10 +166,9 @@
 
   onMount(() => {
     // Initialize with 9 popular reactions for perfect 3x3 grid
-    filteredEmojis = popularReactions.map(char => {
-      const found = searchEmojis('').find(e => e.char === char);
-      return found || { char, name: char, keywords: [] };
-    });
+    filteredEmojis = popularReactionNames.map(name => {
+      return getEmojiByName(name);
+    }).filter(emoji => emoji !== undefined) as EmojiData[]; // Filter out any not found
 
     document.addEventListener('keydown', handleKeyDown);
     
@@ -268,8 +266,8 @@
     border: 1px solid hsl(var(--bc) / 0.2);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    min-width: 250px;
-    max-width: 300px;
+    min-width: 280px;
+    max-width: 320px;
   }
 
   .reaction-picker-container {
@@ -294,8 +292,8 @@
 
   .emoji-picker-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 2px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
     padding: 8px;
     max-height: 200px;
     overflow-y: auto;
@@ -306,12 +304,15 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 6px 4px;
+    padding: 8px 6px;
     border: none;
     background: transparent;
     cursor: pointer;
     border-radius: 6px;
     transition: background-color 0.1s;
+    min-height: 50px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .emoji-item:hover,
@@ -333,8 +334,15 @@
   .emoji-name {
     color: hsl(var(--bc) / 0.6);
     font-family: monospace;
-    font-size: 10px;
+    font-size: 9px;
     text-align: center;
+    word-break: break-all;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .picker-backdrop {
