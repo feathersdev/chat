@@ -9,6 +9,7 @@
     "build:svelte": "npm run build --workspace svelte-chat",
     "dev:svelte": "npm run dev --workspace svelte-chat",
     "dev:react": "npm run dev --workspace react-chat",
+    "dev:sync": "npm run start --workspace sync-server",
     "update-dependencies": "npm exec --workspaces -- ncu -u",
     "init": "pinion init.mjs"
   },

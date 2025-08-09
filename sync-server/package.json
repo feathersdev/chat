@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "sudo PORT=443 node index.js",
+    "dev": "PORT=3030 node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

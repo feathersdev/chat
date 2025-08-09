@@ -1,6 +1,7 @@
 // @ts-check
 import fs from "fs"
 import https from "https"
+import http from "http"
 import express from "express"
 import { WebSocketServer } from "ws"
 import { Repo } from "@automerge/automerge-repo"
@@ -55,16 +56,29 @@ export class Server {
       res.json(serverRepo.metrics())
     })
 
-    const sslOptions = {
-      key: fs.readFileSync('/etc/letsencrypt/live/dweb.feathers.cloud/privkey.pem'),
-      cert: fs.readFileSync('/etc/letsencrypt/live/dweb.feathers.cloud/fullchain.pem'),
-    }
+    // Check if we should use HTTPS (certificates exist or FORCE_HTTPS is set)
+    const certPath = process.env.CERT_PATH || '/etc/letsencrypt/live/dweb.feathers.cloud';
+    const privateKeyPath = `${certPath}/privkey.pem`;
+    const certificatePath = `${certPath}/fullchain.pem`;
+    
+    const useHTTPS = process.env.FORCE_HTTPS === 'true' || 
+      (fs.existsSync(privateKeyPath) && fs.existsSync(certificatePath));
 
-    this.#server = https.createServer(sslOptions, app).listen(PORT, () => {
-      console.log(`HTTPS Server listening on port ${PORT}`)
+    const onListen = () => {
+      console.log(`${useHTTPS ? 'HTTPS' : 'HTTP'} Server listening on port ${PORT}`)
       this.#isReady = true
       this.#readyResolvers.forEach((resolve) => resolve(true))
-    })
+    }
+
+    if (useHTTPS) {
+      const sslOptions = {
+        key: fs.readFileSync(privateKeyPath),
+        cert: fs.readFileSync(certificatePath),
+      }
+      this.#server = https.createServer(sslOptions, app).listen(PORT, onListen)
+    } else {
+      this.#server = http.createServer(app).listen(PORT, onListen)
+    }
 
     this.#server.on("upgrade", (request, socket, head) => {
       this.#socket.handleUpgrade(request, socket, head, (socket) => {

@@ -24,8 +24,9 @@
   const verifier = createVerifier({ appId });
 
   // Initialize Automerge
+  const automergeUrl = import.meta.env.VITE_AUTOMERGE_URL || 'wss://dweb.feathers.cloud';
   const repo = new Repo({
-    network: [new BrowserWebSocketClientAdapter('wss://dweb.feathers.cloud')],
+    network: [new BrowserWebSocketClientAdapter(automergeUrl)],
     storage: new IndexedDBStorageAdapter()
   });
   // const automergeUrl = repo.create<ChatDocument>({
