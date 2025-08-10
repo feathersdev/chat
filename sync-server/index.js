@@ -57,7 +57,7 @@ export class Server {
     })
 
     // Check if we should use HTTPS (certificates exist or FORCE_HTTPS is set)
-    const certPath = process.env.CERT_PATH || '/etc/letsencrypt/live/dweb.feathers.cloud';
+    const certPath = process.env.CERT_PATH || '/etc/letsencrypt/live/dweb.feathers.dev';
     const privateKeyPath = `${certPath}/privkey.pem`;
     const certificatePath = `${certPath}/fullchain.pem`;
     
