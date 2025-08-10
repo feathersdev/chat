@@ -278,7 +278,7 @@
     width: 100%;
     height: 40px;
     padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
+    font-size: 1rem; /* Increased from 0.875rem to prevent mobile zoom */
     border: none;
     border-radius: 8px 8px 0 0;
     background-color: transparent;

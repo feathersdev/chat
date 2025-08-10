@@ -8,7 +8,8 @@
 
 body,
 #app {
-  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height - adjusts for mobile UI */
+  height: 100vh; /* Fallback for older browsers */
   width: 100vw;
   margin: 0;
   padding: 0;

@@ -259,8 +259,8 @@
     width: 100%;
     height: 3rem;
     padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
+    font-size: 1rem; /* Increased from 0.875rem to prevent mobile zoom */
+    line-height: 1.5rem;
     border: 1px solid hsl(var(--bc) / 0.2);
     border-radius: 0.5rem;
     background-color: hsl(var(--b1));
