@@ -32,7 +32,7 @@ function App() {
   // Sets the current user's username and stores it in the document
   const createUser = async (input: string) => {
     const username = input.trim().toLowerCase()
-    
+
     if (users.find(user => user.username === username)) {
       alert('Username already taken, please choose another one')
     } else if (handle && cloudAuthUser) {
@@ -77,7 +77,7 @@ function App() {
         const existingUser = doc.users.find(user => user.id === cloudAuthUser?.id) || null
 
         setUser(existingUser)
-        setMessages(doc.messages)
+        setMessages((doc.messages || []).slice(-20))
         setUsers(doc.users)
       })
 

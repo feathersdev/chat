@@ -21,7 +21,7 @@
     const loadDocument = (doc?: Doc<ChatAppData>) => {
       if (doc) {
         user = doc.users?.find((user) => user.id === cloudAuthUser?.id) || null;
-        messages = doc.messages || [];
+        messages = (doc.messages || []).slice(-20);
         users = doc.users || [];
       }
       ready = true;
