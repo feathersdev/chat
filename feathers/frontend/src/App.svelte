@@ -12,10 +12,7 @@
   //     baseUrl: 'http://localhost:3030',
   //   }),
   // )
-
-  const doc = await getDocument()
-
-  client.use('messages', new AutomergeService(doc))
+  client.use('messages', new AutomergeService(await getDocument()) as any)
 
   let text = $state('')
   let messages = $state(await client.service('messages').find())

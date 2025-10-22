@@ -6,8 +6,8 @@ export type Message = {
   createdAt: number
 }
 
-class MessageService {
-  public messages: Message[] = []
+export class MessageService {
+  messages: Message[] = []
 
   async find() {
     return this.messages
@@ -15,19 +15,23 @@ class MessageService {
 
   async get(id: string) {
     const message = this.messages.find((message) => message.id === parseInt(id))
+
     if (!message) {
-      throw new Error(`Message not found: ${id}`)
+      throw new Error(`Message not found`)
     }
+
     return message
   }
 
-  async create({ text }: { text: string }) {
-    const message: Message = {
-      id: this.messages.length + 1,
+  async create(data: Pick<Message, 'text'>) {
+    const message = {
+      id: this.messages.length,
+      text: data.text,
       createdAt: Date.now(),
-      text,
     }
+
     this.messages.push(message)
+
     return message
   }
 }
@@ -40,12 +44,12 @@ const app = feathers<Services>()
 
 app.use('messages', new MessageService())
 
-app.service('messages').on('created', (message) => {
-  console.log('Message created', message)
+app.service('messages').on('created', (message: Message) => {
+  console.log(`Message created: ${message.text}`)
 })
 
 app.service('messages').create({
-  text: 'Message from server',
+  text: 'Hello from server',
 })
 
 export { app }
