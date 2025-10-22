@@ -7,11 +7,13 @@
 
   const client = feathers<Services>()
 
-  // client.configure(
-  //   fetchClient(window.fetch.bind(window), {
-  //     baseUrl: 'http://localhost:3030',
-  //   }),
-  // )
+  client.configure(
+    fetchClient(window.fetch.bind(window), {
+      baseUrl: 'http://localhost:3030',
+    }),
+  )
+
+  // Use Automerge for the messages service. Comment out if you want to connect to the server instead.
   client.use('messages', new AutomergeService(await getDocument()) as any)
 
   let text = $state('')
