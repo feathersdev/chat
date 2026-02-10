@@ -1,11 +1,19 @@
 <script lang="ts">
+  import 'talon-auth/login'
+  import type { TalonLoginComponent } from 'talon-auth'
+  import { createAutomerge, DocHandle } from '@feathersdev/automerge'
   import type { Doc } from '@automerge/automerge-repo';
   import type { ChatAppData, CloudAuthUser, Message, User } from './utils.js';
   import { formatDate, sha256 } from './utils.js';
-  import { afterUpdate } from 'svelte';
-  import { loadAppDocument, type AppDocumentHandle } from './automerge.js';
-  import { auth } from './auth.js';
+  import { afterUpdate, onMount } from 'svelte';
   import loading from './assets/loading.svg';
+
+  const appId = import.meta.env.VITE_CLOUD_APP_ID as string
+
+  /**
+   * The document handle type for the application
+   */
+  type AppDocumentHandle = DocHandle<ChatAppData>
 
   let ready = false;
   let cloudAuthUser: CloudAuthUser | null = null;
@@ -14,6 +22,8 @@
   let users: User[] = [];
   let text: string = '';
   let handle: AppDocumentHandle;
+
+  const getAuth = () => document.querySelector('talon-login') as TalonLoginComponent
 
   const getUserById = (id: string) => users.find((user) => user.id === id);
 
@@ -27,8 +37,10 @@
       ready = true;
     };
 
-    handle = await loadAppDocument();
-    cloudAuthUser = await auth.getUser();
+    const automerge = createAutomerge(getAuth())
+
+    handle = await automerge.find<ChatAppData>();
+    cloudAuthUser = await getAuth().getUser();
     // Update application data when document changes
     handle.on('change', ({ doc }) => loadDocument(doc));
     // Initialise the document if it is already available
@@ -90,7 +102,7 @@
   };
 
   const logout = async () => {
-    await auth.logoutAndForget();
+    await getAuth().logoutAndForget();
     window.location.reload();
   };
 
@@ -100,10 +112,11 @@
       ?.scrollIntoView({ behavior: 'smooth' });
   });
 
-  init();
+  onMount(() => init())
 </script>
 
 <main>
+  <talon-login app-id="{appId}" />
   {#if ready}
     {#if user === null}
       <div
