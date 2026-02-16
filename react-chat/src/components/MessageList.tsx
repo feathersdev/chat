@@ -1,8 +1,40 @@
 import { useEffect, useRef } from "react"
 import { ChatDocument, Message, User } from "../utils"
 import { DocHandle } from "@automerge/automerge-repo"
-import { marked } from 'marked';
+import { marked, type Tokens} from 'marked';
 import DOMPurify from 'dompurify';
+
+marked.use({
+  renderer: {
+    /* This is basically what marked is doing, just inlined */
+    link({ href, title, tokens }: Tokens.Link): string {
+      const text = this.parser.parseInline(tokens);
+
+      let cleanHref
+
+      try {
+        cleanHref = encodeURI(href).replace(/%25/g, '%');
+      } catch {
+        cleanHref = null
+      }
+
+      if (cleanHref === null) {
+        return text;
+      }
+
+      let out = '<a target="_blank" rel="noopener noreferrer" href="' + cleanHref + '"';
+
+      if (title) {
+        out += ' title="' + title + '"';
+      }
+
+      out += '>' + text + '</a>';
+
+      return out;
+    }
+
+  }
+})
 
 type MessageListProps = {
   messages: Message[]
@@ -28,7 +60,7 @@ export const MessageList = ({ messages, users, user, handle }: MessageListProps)
     return message.likes?.length || 0;
   }
 
-  // Update the message's Like 
+  // Update the message's Like
   const createLike = (messageId: string) => {
     if (handle && user) {
       handle.change(doc => {
@@ -64,7 +96,7 @@ export const MessageList = ({ messages, users, user, handle }: MessageListProps)
         <time className="text-xs opacity-50">{formatDate(message.createdAt)}</time>
       </div>
       <div className="chat-bubble break-words"
-        dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(marked.parse(message.text, { async: false }))}} />
+        dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(marked.parse(message.text, { async: false }), { ADD_ATTR: ['target'] })}} />
       <div className="chat-footer">
         {/* Swap icons based on whether users have liked it or not */}
         <span className="text-xs cursor-pointer" onClick={() => createLike(message.id)}>
