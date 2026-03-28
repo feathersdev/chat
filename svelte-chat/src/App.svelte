@@ -42,8 +42,21 @@
 
     const automerge = createAutomerge(client as any)
 
-    handle = await automerge.find<ChatAppData>();
     cloudAuthUser = await client.getUser();
+
+    const findWithRetry = async (retries = 3, delay = 1000): Promise<AppDocumentHandle> => {
+      try {
+        return await automerge.find<ChatAppData>();
+      } catch (error: any) {
+        if (retries > 0 && error?.message?.includes('unavailable')) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          return findWithRetry(retries - 1, delay * 2);
+        }
+        throw error;
+      }
+    };
+
+    handle = await findWithRetry();
     // Update application data when document changes
     handle.on('change', ({ doc }) => loadDocument(doc));
     // Initialise the document if it is already available
