@@ -1,6 +1,6 @@
 <script lang="ts">
   import 'talon-auth/login'
-  import type { TalonLoginComponent } from 'talon-auth'
+  import { getLoginElement } from 'talon-auth'
   import { createAutomerge, DocHandle } from '@feathersdev/automerge'
   import type { Doc } from '@automerge/automerge-repo';
   import type { ChatAppData, CloudAuthUser, Message, User } from './utils.js';
@@ -23,8 +23,6 @@
   let text: string = '';
   let handle: AppDocumentHandle;
 
-  const getAuth = () => document.querySelector('talon-login') as TalonLoginComponent
-
   const getUserById = (id: string) => users.find((user) => user.id === id);
 
   const init = async () => {
@@ -36,11 +34,16 @@
       }
       ready = true;
     };
+    const client = await getLoginElement()
 
-    const automerge = createAutomerge(getAuth())
+    if (client === null) {
+      throw new Error('Expected login element')
+    }
+
+    const automerge = createAutomerge(client as any)
 
     handle = await automerge.find<ChatAppData>();
-    cloudAuthUser = await getAuth().getUser();
+    cloudAuthUser = await client.getUser();
     // Update application data when document changes
     handle.on('change', ({ doc }) => loadDocument(doc));
     // Initialise the document if it is already available
@@ -102,7 +105,8 @@
   };
 
   const logout = async () => {
-    await getAuth().logoutAndForget();
+    const client = await getLoginElement()
+    await client!.logoutAndForget();
     window.location.reload();
   };
 

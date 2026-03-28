@@ -15,16 +15,15 @@
     "@tsconfig/svelte": "^5.0.4",
     "svelte": "^4.2.18",
     "svelte-check": "^3.8.5",
-    "talon-auth": "^0.12.0",
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",
     "vite": "^5.3.5",
     "vite-plugin-wasm": "^3.3.0"
   },
   "dependencies": {
-    "@feathersdev/auth": "^0.11.3",
-    "@feathersdev/automerge": "^0.11.3",
+    "@feathersdev/automerge": "^0.17.3",
     "@feathersjs/errors": "^5.0.29",
+    "talon-auth": "^0.17.3",
     "vite-plugin-top-level-await": "^1.4.2"
   }
 }
