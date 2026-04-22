@@ -21,9 +21,9 @@
     "vite-plugin-wasm": "^3.3.0"
   },
   "dependencies": {
-    "@feathersdev/automerge": "^0.17.3",
     "@feathersjs/errors": "^5.0.29",
-    "talon-auth": "^0.17.3",
+    "talon-auth": "^0.17.4",
+    "talon-automerge": "^0.17.4",
     "vite-plugin-top-level-await": "^1.4.2"
   }
 }

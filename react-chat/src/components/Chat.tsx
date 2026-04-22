@@ -1,4 +1,4 @@
-import { DocHandle } from "@automerge/automerge-repo";
+import { DocHandle } from "talon-automerge";
 import { ChatDocument, Message, User, cn } from "../utils";
 import { CreateMessage } from "./CreateMessage"
 import { MessageList } from "./MessageList"
@@ -8,11 +8,11 @@ export type ChatOptions = {
   users: User[];
   messages: Message[];
   createMessage: (text: string) => void;
-  handle: DocHandle<ChatDocument> 
-  
+  handle: DocHandle<ChatDocument>
+  onLogout: () => void
 };
 
-export const Chat = ({ messages, user, users, createMessage, handle }: ChatOptions) => {
+export const Chat = ({ messages, user, users, createMessage, handle, onLogout }: ChatOptions) => {
   return <div className="drawer drawer-mobile"><input id="drawer-left" type="checkbox" className="drawer-toggle" />
     <div className="drawer-content flex flex-col">
       <div className="navbar w-full">
@@ -26,6 +26,11 @@ export const Chat = ({ messages, user, users, createMessage, handle }: ChatOptio
           <label htmlFor="drawer-right" className="text-xs cursor-pointer">
             <span className="online-count">{users.length}</span> User(s)
           </label>
+        </div>
+        <div className="navbar-end">
+          <button className="btn btn-sm btn-neutral" onClick={onLogout}>
+            Logout
+          </button>
         </div>
       </div>
       <MessageList messages={messages} users={users} user={user} handle={handle} />
