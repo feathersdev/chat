@@ -1,7 +1,7 @@
 <script lang="ts">
   import 'talon-auth/login'
   import { getLoginElement } from 'talon-auth'
-  import { createAutomerge, DocHandle } from '@feathersdev/automerge'
+  import { createAutomerge, DocHandle } from 'talon-automerge'
   import type { Doc } from '@automerge/automerge-repo';
   import type { ChatAppData, CloudAuthUser, Message, User } from './utils.js';
   import { formatDate, sha256 } from './utils.js';
@@ -40,7 +40,7 @@
       throw new Error('Expected login element')
     }
 
-    const automerge = createAutomerge(client as any)
+    const automerge = createAutomerge(client)
 
     cloudAuthUser = await client.getUser();
 
